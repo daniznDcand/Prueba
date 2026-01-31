@@ -1,97 +1,164 @@
 import fetch from 'node-fetch';
 
-let handler = async (m, { text }) => {
-  if (!text) return m.reply('❌ *Escribe lo que quieres buscar*\nEjemplo: /soundcloud Bad Bunny');
+let handler = async (m, { text, args, usedPrefix, command }) => {
+  // Si no se proporciona texto, mostrar ayuda
+  if (!text) {
+    return m.reply(`🎵 *${command.toUpperCase()} - Descarga de SoundCloud*\n\n📌 *Uso:* ${usedPrefix}${command} <URL de SoundCloud>\n\n📝 *Ejemplos:*\n${usedPrefix}${command} https://soundcloud.com/artista/cancion\n${usedPrefix}${command} https://on.soundcloud.com/xxxxx\n\n⚠️ *Nota:* Necesitas la URL completa de SoundCloud`);
+  }
 
-  await m.reply('🔍 Buscando en SoundCloud...');
+  // Verificar si es una URL de SoundCloud
+  let url = text.trim();
+  if (!url.match(/soundcloud\.com|on\.soundcloud\.com/i)) {
+    return m.reply(`❌ *URL inválida*\n\nPor favor, ingresa una URL válida de SoundCloud.\nEjemplo: https://soundcloud.com/twice-57013/one-spark\n\nTambién puedes usar: ${usedPrefix}song <nombre> para buscar y descargar música.`);
+  }
 
-  const APIs = [
-    // API 1 (la original)
-    `https://api.stellarwa.xyz/dl/soundcloudsearch?query=${encodeURIComponent(text)}&key=stellar-wCnAirJG`,
-    
-    // API 2 (alternativa)
-    `https://api.lolhuman.xyz/api/soundcloud?apikey=TU_API_KEY&query=${encodeURIComponent(text)}`,
-    
-    // API 3 (otra alternativa)
-    `https://api.neoxr.my.id/api/soundcloud?q=${encodeURIComponent(text)}&apikey=neoxr-apikey`,
-    
-    // API 4 (más simple)
-    `https://soundcloud-scraper.p.rapidapi.com/v1/search/tracks?query=${encodeURIComponent(text)}`,
-  ];
+  // Limpiar y preparar URL
+  url = url.split('?')[0]; // Remover parámetros de query
+  
+  await m.reply('🔍 *Procesando enlace de SoundCloud...*');
 
-  for (let apiUrl of APIs) {
-    try {
-      console.log('Probando API:', apiUrl);
+  try {
+    const apiUrl = `https://api.delirius.store/download/soundcloud?url=${encodeURIComponent(url)}`;
+    
+    console.log('Consultando API:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json'
+      },
+      timeout: 30000 // 30 segundos timeout
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    console.log('Respuesta API:', JSON.stringify(result, null, 2));
+
+    // Verificar estructura de respuesta
+    if (result.error || !result.success) {
+      const errorMsg = result.message || result.error || 'Error desconocido en la API';
+      return m.reply(`❌ *Error en la API:* ${errorMsg}`);
+    }
+
+    // Extraer información de la respuesta
+    const data = result.data || result;
+    
+    if (!data) {
+      return m.reply('❌ *No se pudo obtener información de la canción*');
+    }
+
+    // Crear mensaje con la información
+    let message = `🎧 *DESCARGA DE SOUNDCLOUD*\n\n`;
+    
+    // Información básica
+    if (data.title) message += `*Título:* ${data.title}\n`;
+    if (data.artist || data.uploader) message += `*Artista:* ${data.artist || data.uploader}\n`;
+    if (data.duration) message += `*Duración:* ${formatDuration(data.duration)}\n`;
+    if (data.quality) message += `*Calidad:* ${data.quality}\n`;
+    if (data.size) message += `*Tamaño:* ${formatBytes(data.size)}\n`;
+    
+    message += '\n⬇️ *ENLACES DE DESCARGA:*\n';
+
+    // Verificar si hay URL de audio directo
+    if (data.url || data.downloadUrl) {
+      const audioUrl = data.url || data.downloadUrl;
+      message += `🔗 *Audio:* ${audioUrl}\n`;
       
-      const response = await fetch(apiUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 10000
-      });
-      
-      if (!response.ok) continue;
-      
-      const result = await response.json();
-      
-      // Diferentes estructuras de respuesta según la API
-      let tracks = [];
-      
-      if (result.status && result.result) {
-        // API 1: stellarwa.xyz
-        tracks = result.result;
-      } else if (result.result) {
-        // API 2: lolhuman
-        tracks = result.result;
-      } else if (Array.isArray(result)) {
-        // API 3: neoxr
-        tracks = result;
-      } else if (result.data) {
-        // API 4: rapidapi
-        tracks = result.data;
-      } else if (result.tracks) {
-        // Otra estructura común
-        tracks = result.tracks;
-      }
-      
-      if (tracks.length > 0) {
-        let message = '🎧 *RESULTADOS SOUNDCLOUD*\n\n';
-        
-        tracks.slice(0, 5).forEach((track, i) => {
-          message += `*${i + 1}.* ${track.title || 'Sin título'}\n`;
-          if (track.user) message += `   👤 *Artista:* ${track.user.username || track.artist}\n`;
-          if (track.duration) message += `   ⏱️ *Duración:* ${formatDuration(track.duration)}\n`;
-          if (track.genre) message += `   🎶 *Género:* ${track.genre}\n`;
-          if (track.permalink_url) message += `   🔗 *URL:* ${track.permalink_url}\n`;
-          message += '\n';
+      // Intentar enviar el audio directamente
+      try {
+        await m.conn.sendFile(m.chat, audioUrl, 'soundcloud.mp3', '', m, null, {
+          mimetype: 'audio/mpeg',
+          filename: `${data.title || 'soundcloud'}.mp3`
         });
         
-        message += '📌 Para descargar: /song <nombre>';
+        // También enviar la información
+        return m.reply(message);
         
-        await m.reply(message);
-        return;
+      } catch (sendError) {
+        console.log('Error enviando archivo:', sendError);
+        message += `\n⚠️ *No se pudo enviar el audio automáticamente*\n`;
+        message += `📥 *Descarga manual:* ${audioUrl}\n`;
+        return m.reply(message);
       }
-      
-    } catch (error) {
-      console.log('API falló:', apiUrl, error.message);
-      continue;
     }
+    // Si hay múltiples formatos
+    else if (data.formats && Array.isArray(data.formats)) {
+      data.formats.forEach((format, index) => {
+        message += `\n*Opción ${index + 1}:*\n`;
+        if (format.quality) message += `   Calidad: ${format.quality}\n`;
+        if (format.url) message += `   URL: ${format.url}\n`;
+        if (format.size) message += `   Tamaño: ${formatBytes(format.size)}\n`;
+      });
+      
+      return m.reply(message);
+    }
+    // Si no hay URL de descarga
+    else {
+      message += '❌ *No se encontraron enlaces de descarga disponibles*';
+      return m.reply(message);
+    }
+
+  } catch (error) {
+    console.error('❌ Error en soundcloud download:', error);
+    
+    let errorMessage = '❌ *Error al procesar la solicitud*\n\n';
+    
+    if (error.message.includes('timeout')) {
+      errorMessage += '⏱️ *Tiempo de espera agotado*\nLa API tardó demasiado en responder.';
+    } else if (error.message.includes('fetch failed')) {
+      errorMessage += '🌐 *Error de conexión*\nNo se pudo conectar con el servidor.';
+    } else {
+      errorMessage += `🔧 *Detalles:* ${error.message}`;
+    }
+    
+    errorMessage += `\n\n🎵 *Alternativa:* Usa ${usedPrefix}song <nombre> para buscar música.`;
+    
+    return m.reply(errorMessage);
   }
-  
-  // Si todas las APIs fallaron
-  await m.reply('❌ *No se pudo conectar con SoundCloud*\n\nUsa: /song <nombre> para buscar y descargar música');
 };
 
-function formatDuration(ms) {
-  if (!ms) return 'Desconocida';
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+// Función para formatear duración
+function formatDuration(seconds) {
+  if (!seconds) return 'Desconocida';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
-handler.command = ['soundcloud', 'sc'];
-handler.tags = ['music'];
-handler.help = ['soundcloud <texto>'];
+// Función para formatear bytes
+function formatBytes(bytes) {
+  if (!bytes) return 'Desconocido';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unitIndex = 0;
+  
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
+  }
+  
+  return `${size.toFixed(2)} ${units[unitIndex]}`;
+}
+
+// Comandos que activan este handler
+handler.command = ['soundcloud', 'scdl', 'scdownload'];
+handler.tags = ['music', 'download'];
+handler.help = [
+  'soundcloud <url> - Descargar audio de SoundCloud',
+  'scdl <url> - Atajo para descargar de SoundCloud'
+];
+
+// Configuración adicional
+handler.limit = true; // Limitar uso
+handler.premium = false; // No requiere premium
 
 export default handler;
