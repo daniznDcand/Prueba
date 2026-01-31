@@ -5,60 +5,37 @@ let handler = async (m, { text }) => {
     return m.reply('❌ *Falta el texto de búsqueda*\n\nEjemplo: /soundcloud Bad Bunny');
   }
   
-  await m.reply('🔍 Buscando en SoundCloud...');
+  await m.reply('🔍 Buscando...');
 
   try {
-    // Usando la nueva API que proporcionaste
     let url = `https://api.stellarwa.xyz/search/soundcloud?query=${encodeURIComponent(text)}&key=stellar-wCnAirJG`;
-    
     let res = await fetch(url);
-    
-    if (!res.ok) {
-      throw new Error(`Error HTTP: ${res.status}`);
-    }
-    
     let data = await res.json();
 
-    // Verificar la estructura de la respuesta
-    if (!data.status || !data.result || data.result.length === 0) {
-      return m.reply('❌ No se encontraron resultados en SoundCloud');
+    if (!data.status || !data.results || data.results.length === 0) {
+      return m.reply('❌ No se encontraron resultados');
     }
 
     let message = '🎧 *RESULTADOS SOUNDCLOUD*\n\n';
     
-    // Mostrar primeros 5 resultados (o menos si hay menos de 5)
-    let results = data.result.slice(0, 5);
-    
-    results.forEach((item, i) => {
+    data.results.slice(0, 5).forEach((item, i) => {
       message += `*${i + 1}.* ${item.title || 'Sin título'}\n`;
-      message += `   👤 *Artista:* ${item.artist || 'Desconocido'}\n`;
-      
-      // Convertir duración de segundos a formato MM:SS si está disponible
-      if (item.duration) {
-        let minutes = Math.floor(item.duration / 60);
-        let seconds = item.duration % 60;
-        message += `   ⏱️ *Duración:* ${minutes}:${seconds.toString().padStart(2, '0')}\n`;
-      }
-      
-      if (item.genre) message += `   🎶 *Género:* ${item.genre}\n`;
-      
-      // Agregar URL si está disponible
-      if (item.url) {
-        message += `   🔗 *URL:* ${item.url}\n`;
-      }
-      
-      message += '\n';
+      message += `   👤 *Autor:* ${item.author?.name || 'Desconocido'}\n`;
+      if (item.duration) message += `   ⏱️ *Duración:* ${item.duration}\n`;
+      if (item.release_date) message += `   📅 *Fecha:* ${item.release_date}\n`;
+      if (item.play_count) message += `   ▶️ *Reproducciones:* ${item.play_count}\n`;
+      if (item.like_count) message += `   ❤️ *Likes:* ${item.like_count}\n`;
+      message += `   🔗 [Escuchar](${item.url})\n\n`;
     });
 
-    message += `📌 Usa el número correspondiente para seleccionar una canción\n`;
-    message += `📌 Ejemplo: */sc 1* para seleccionar el primer resultado`;
+    message += `📌 Usa */song <nombre>* para descargar`;
 
     await m.reply(message);
     m.react('✅');
     
   } catch (error) {
-    console.error('Error en búsqueda de SoundCloud:', error);
-    m.reply('❌ Error al buscar en SoundCloud. Verifica la conexión o intenta más tarde.');
+    console.error(error);
+    m.reply('❌ Error al buscar en SoundCloud');
   }
 };
 
