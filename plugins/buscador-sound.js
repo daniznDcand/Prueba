@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 let handler = async (m, { text }) => {
   if (!text) {
-    m.reply(`🎵 Por favor, proporciona el nombre de la canción o artista que deseas buscar en SoundCloud ✨`, m, global.miku);
+    m.reply(`🎵 Por favor, proporciona el nombre de la canción o artista que deseas buscar en SoundCloud ✨`, m);
     return true;
   }
 
