@@ -44,6 +44,6 @@ let handler = async (m, { text }) => {
 handler.command = ['soundcloud', 'scsearch'];
 handler.tags = ['music'];
 handler.help = ['soundcloud <texto>', 'scsearch <texto>'];
-handler.register = true;
+handler.register = false;
 
 export default handler;
