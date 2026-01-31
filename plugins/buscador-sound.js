@@ -13,7 +13,7 @@ let handler = async (m, { text }) => {
     const result = await response.json();
 
     if (!result.status || !result.result) {
-      m.reply('🎶 No se encontraron resultados en SoundCloud 💫', m, global.miku);
+      m.reply('🎶 No se encontraron resultados en SoundCloud 💫', m);
       return true;
     }
 
@@ -37,7 +37,7 @@ let handler = async (m, { text }) => {
     m.reply(replyMessage);
   } catch (error) {
     console.error(`🎵 Error al realizar la solicitud a la API de SoundCloud:`, error);
-    m.reply(`🎧 ¡Oops! Ocurrió un error al buscar en SoundCloud ✨`, m, global.miku);
+    m.reply(`🎧 ¡Oops! Ocurrió un error al buscar en SoundCloud ✨`, m);
   }
 };
 
