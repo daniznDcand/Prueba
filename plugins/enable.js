@@ -2,15 +2,18 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
   let isEnable = /true|enable|(turn)?on|1/i.test(command)
   let chat = global.db.data.chats[m.chat]
   let user = global.db.data.users[m.sender]
-  let bot = global.db.data.settings[conn.user.jid] || {}
+  
+  // CORRECCIÓN AQUÍ: Verificar si global.db.data.settings existe
+  let bot = (global.db.data.settings && global.db.data.settings[conn.user.jid]) || {}
+  
   let xx = '```'
   let type = (args[0] || '').toLowerCase()
   let isAll = false, isUser = false
 
   let allOptions = {
-    chat: Object.keys(chat).filter(k => typeof chat[k] === 'boolean'),
-    user: Object.keys(user).filter(k => typeof user[k] === 'boolean'),
-    bot: Object.keys(bot).filter(k => typeof bot[k] === 'boolean'),
+    chat: Object.keys(chat || {}).filter(k => typeof chat[k] === 'boolean'),
+    user: Object.keys(user || {}).filter(k => typeof user[k] === 'boolean'),
+    bot: Object.keys(bot || {}).filter(k => typeof bot[k] === 'boolean'),
   }
 
   if (allOptions.chat.includes(type)) {
