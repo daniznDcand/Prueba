@@ -18,14 +18,16 @@ let handler = async (m, { text, conn }) => {
 
     let track = data.data;
 
-    let message = `🎧 *SOUNDCLOUD DL*\n\n`;
-    message += `📌 *Título:* ${track.title}\n`;
-    message += `👤 *Artista:* ${track.artist}\n`;
-    message += `⏱️ *Duración:* ${(track.duration / 1000 / 60).toFixed(2)} min\n`;
-    message += `🖼️ *Banner:* ${track.banner}\n`;
-    message += `⬇️ *Descargando...*\n`;
+    let caption = `🎧 *SOUNDCLOUD DL*\n\n`;
+    caption += `📌 *Título:* ${track.title}\n`;
+    caption += `👤 *Artista:* ${track.artist}\n`;
+    caption += `⏱️ *Duración:* ${(track.duration / 1000 / 60).toFixed(2)} min\n`;
+    caption += `⬇️ *Descargando...*\n`;
 
-    await m.reply(message);
+    await conn.sendMessage(m.chat, {
+      image: { url: track.banner },
+      caption: caption
+    }, { quoted: m });
 
     await conn.sendMessage(m.chat, {
       audio: { url: track.dl },
