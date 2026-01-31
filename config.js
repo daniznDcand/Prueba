@@ -8,11 +8,11 @@ import axios from 'axios';
 import moment from 'moment-timezone';
 
 global.owner = [
-  ['5212431268546', '©FzTeis', true],
-  ['5215549715429', 'Mr. Shaddy', true],
-  ['5212431285029', 'Im Atomic', true], 
-  ['17146121800', true],
-  ['13157103615', true]
+  ['51994143761', '©FzTeis', true],
+  ['51994143761', 'Mr. Shaddy', true],
+  ['51994143761', 'Im Atomic', true], 
+  ['51994143761', true],
+  ['51994143761', true]
 ] //Numeros de owner 
 
 global.mods = [] 
@@ -33,10 +33,10 @@ global.APIKeys = { // APIKey Here
 
 // Sticker WM & prefijo
 global.prefijo = "§";
-global.packname = '☪️┊Simple | Wa Bot  ͙۪▩⃟⁩ 🎋'
+global.packname = '☪️┊Sumi | Sakurasawa  ͙۪▩⃟⁩ 🎋'
 global.wm = '⚕️┊Simple | Wa Bot  ͙۪▩⃟⁩ 🌾'
-global.author = '©FzTeis'
-global.link_uni = 'https://chat.whatsapp.com/JQMyVsc8U4iEHi7qLFgYNH'
+global.author = '©Daniel'
+global.link_uni = 'https://chat.whatsapp.com/EOvqvlgsWiV2yMTCCcHHuK?mode=gi_t'
 global.simple_logo = 'https://i.imgur.com/Owmb93c.png' 
 
 global.wait = '*⌛ Cargando . . . Espera un momento 🦖*'
