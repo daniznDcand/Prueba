@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
 
-let handler = async (m, { text, conn }) => {
+let handler = async (m, { text }) => {
   if (!text) {
-    return m.reply(`🎵 *Uso correcto:*\n\`\`\`${usedPrefix}soundcloud <nombre de la canción/artista>\`\`\`\nEjemplo: *${usedPrefix}soundcloud Bad Bunny*`);
+    return m.reply(`🎵 *Uso correcto:*\n\`\`\`/soundcloud <nombre de la canción/artista>\`\`\`\nEjemplo: */soundcloud Bad Bunny*`);
   }
 
   m.reply('🔍 *Buscando en SoundCloud...*');
@@ -32,36 +32,15 @@ let handler = async (m, { text, conn }) => {
       replyMessage += `━━━━━━━━━━━━━━\n\n`;
     });
 
-    replyMessage += `📌 *Para descargar:*\nUsa el comando *${usedPrefix}song* o *${usedPrefix}play* con el nombre exacto`;
+    replyMessage += `📌 *Para descargar:*\nUsa el comando */song* o */play* con el nombre exacto`;
 
     m.react('🎶');
     
-    // Enviar los primeros 3 resultados como botones interactivos
-    if (resultsToShow.length > 0) {
-      let buttons = [];
-      resultsToShow.slice(0, 3).forEach((item, index) => {
-        buttons.push([
-          { 
-            text: `🎵 ${index + 1}. ${item.title.substring(0, 20)}${item.title.length > 20 ? '...' : ''}`, 
-            callback: `!play ${item.title}`
-          }
-        ]);
-      });
-      
-      // Enviar mensaje con botones (si el bot lo soporta)
-      await conn.sendMessage(m.chat, {
-        text: replyMessage,
-        footer: 'Selecciona una canción para reproducir',
-        buttons: buttons,
-        headerType: 1
-      }, { quoted: m });
-    } else {
-      await m.reply(replyMessage);
-    }
+    await m.reply(replyMessage);
     
   } catch (error) {
     console.error('Error en soundcloud:', error);
-    m.reply(`❌ *Error al conectar con SoundCloud*\n\nPosibles causas:\n1. API no disponible\n2. Límite de solicitudes\n3. Problema de red\n\nIntenta más tarde o usa: *${usedPrefix}song <nombre>*`);
+    m.reply(`❌ *Error al conectar con SoundCloud*\n\nPosibles causas:\n1. API no disponible\n2. Límite de solicitudes\n3. Problema de red\n\nIntenta más tarde o usa: */song <nombre>*`);
   }
 };
 
