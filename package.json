@@ -26,16 +26,16 @@
         "Sylphiette",
         "baileys-md"
     ],
-    "homepage": "https://github.com/FzTeis/Simple_Bot-Wa",
+    "homepage": "https://github.com/daniznDcand/Prueba/",
     "author": {
-        "name": "FzTeis"
+        "name": "Daniel"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/FzTeis/Simple_Bot-Wa.git"
+        "url": "git+https://github.com/daniznDcand/Prueba/.git"
     },
     "bugs": {
-        "url": "https://github.com/FzTeis/Simple_Bot-Wa/issues"
+        "url": "https://github.com/daniznDcand/Prueba/issues"
     },
     "license": "MIT",
     "dependencies": {
